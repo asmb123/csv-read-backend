@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS products (
+  sku TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  brand TEXT NOT NULL,
+  mrp NUMERIC NOT NULL,
+  price NUMERIC NOT NULL,
+  quantity INT DEFAULT 0
+);
