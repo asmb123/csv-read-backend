@@ -23,9 +23,9 @@ export async function uploadFunc(req: Request, res: Response) {
         });
 
         for (const row of rows) {
-            const { sku, name, brand, mrp, price, quantity } = row;
+            const { sku, name, brand, color, size, mrp, price, quantity } = row;
 
-            if (!sku || !name || !brand || !mrp || !price) {
+            if (!sku || !name || !brand || !color || !size || !mrp || !price) {
                 invalidRows.push({ row, reason: "Missing required fields" });
                 continue;
             }
@@ -35,21 +35,30 @@ export async function uploadFunc(req: Request, res: Response) {
             const quantityNum = Number(quantity ?? 0);
 
             if (isNaN(mrpNum) || isNaN(priceNum)) {
-                invalidRows.push({ row, reason: "MRP/Price not a number" });
+                invalidRows.push({ row, reason: "MRP or Price is not a valid number" });
                 continue;
             }
 
             if (priceNum > mrpNum) {
-                invalidRows.push({ row, reason: "Price greater than MRP" });
+                invalidRows.push({ row, reason: "Price cannot be greater than MRP" });
                 continue;
             }
 
             if (quantityNum < 0) {
-                invalidRows.push({ row, reason: "Quantity less than 0" });
+                invalidRows.push({ row, reason: "Quantity cannot be negative" });
                 continue;
             }
 
-            validRows.push({ sku, name, brand, mrp: mrpNum, price: priceNum, quantity: quantityNum });
+            validRows.push({
+                sku,
+                name,
+                brand,
+                color,
+                size,
+                mrp: mrpNum,
+                price: priceNum,
+                quantity: quantityNum,
+            });
         }
 
         if (invalidRows.length > 0) {
@@ -63,17 +72,29 @@ export async function uploadFunc(req: Request, res: Response) {
         try {
             for (const row of validRows) {
                 await client.query(
-                    `INSERT INTO products (sku, name, brand, mrp, price, quantity)
-           VALUES ($1, $2, $3, $4, $5, $6)
+                    `INSERT INTO products (sku, name, brand, color, size, mrp, price, quantity)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
            ON CONFLICT (sku) DO NOTHING`,
-                    [row.sku, row.name, row.brand, row.mrp, row.price, row.quantity]
+                    [
+                        row.sku,
+                        row.name,
+                        row.brand,
+                        row.color,
+                        row.size,
+                        row.mrp,
+                        row.price,
+                        row.quantity,
+                    ]
                 );
             }
         } finally {
             client.release();
         }
 
-        res.json({ message: "CSV uploaded successfully", inserted: validRows.length });
+        res.json({
+            message: "CSV uploaded successfully",
+            inserted: validRows.length,
+        });
     } catch (error: any) {
         console.error(error);
         res.status(500).json({ error: "Internal Server Error" });
