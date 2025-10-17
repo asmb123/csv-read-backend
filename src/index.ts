@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import { uploadFunc } from "./controllers/uploadFunc";
+import { fetchFunc } from "./controllers/fetchFunc";
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.get('/', (req, res) => {
 })
 
 app.post('/upload', upload.single("csvFile"), uploadFunc);
+app.get('/products', fetchFunc);
 
 app.listen(3000, () => {
     console.log("Server running in port 3000");
