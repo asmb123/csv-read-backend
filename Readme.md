@@ -93,7 +93,3 @@
     -   <code>docker compose up --build</code>
 -   Or Locally (using node.js)
     -   <code>npm i</code> and then <code>npm run dev</code>
-
-```
-
-```
